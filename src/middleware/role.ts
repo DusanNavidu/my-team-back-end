@@ -2,14 +2,17 @@ import { NextFunction, Response } from "express"
 import { Role } from "../models/user.model"
 import { AUthRequest } from "./auth"
 
+// need multiple role check
 export const requireRole = (roles: Role[]) => {
   return (req: AUthRequest, res: Response, next: NextFunction) => {
     if (!req.user) {
       return res.status(401).json({ message: "Unauthorized" })
     }
-    if (!req.user.roles?.some((role: Role) => roles.includes(role))) { // check if user has at least one of the required roles
+
+    const hasRole = roles.some((role) => req.user.roles?.includes(role))
+    if (!hasRole) {
       return res.status(403).json({
-        message: `Require ${roles.join(", ")} role`
+        message: `Require ${roles} role`
       })
     }
     next()

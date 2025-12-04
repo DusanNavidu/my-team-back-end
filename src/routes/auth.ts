@@ -4,6 +4,7 @@ import {
   login,
   refreshToken,
   registerAdmin,
+  roleUpdate,
   registerUser
 } from "../controllers/auth.controller"
 import { authenticate } from "../middleware/auth"
@@ -29,6 +30,8 @@ router.post(
   requireRole([Role.ADMIN]),
   registerAdmin
 )
+
+router.post("/roleupdate", authenticate, roleUpdate);
 
 // me - Admin or User both
 router.get("/me", authenticate, getMyProfile)

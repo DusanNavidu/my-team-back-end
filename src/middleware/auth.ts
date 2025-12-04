@@ -32,7 +32,7 @@ export const authenticate = (
   } catch (err) {
     console.error(err)
     res.status(401).json({
-      message: "Invalid or expired token"
+      message: "Invalid or expire token"
     })
   }
 }
