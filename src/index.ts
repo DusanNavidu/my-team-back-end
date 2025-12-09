@@ -6,6 +6,7 @@ import dotenv from "dotenv"
 import mongoose from "mongoose"
 import authRouter from "./routes/auth"
 import organizerRouter from "./routes/organizer"
+import eventRouter from "./routes/event"
 import aiRouter from "./routes/ai"
 import { authenticate } from "./middleware/auth"
 import { requireRole } from "./middleware/role"
@@ -28,6 +29,7 @@ app.use(
 app.use("/api/v1/auth", authRouter)
 app.use("/api/v1/ai", aiRouter)
 app.use("/api/v1/organizer", organizerRouter)
+app.use("/api/v1/event", eventRouter)
 
 app.get("/", (req, res) => {
     res.send("Backend is running...")

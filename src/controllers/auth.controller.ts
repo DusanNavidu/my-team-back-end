@@ -146,44 +146,83 @@ export const getMyProfile = async (req: AUthRequest, res: Response) => {
 
 export const roleUpdate = async (req: AUthRequest, res: Response) => {
     try {
-        const { role } = req.body; // අපේක්ෂිත නව role එක (උදා: 'ORGANIZER')
+        const { role } = req.body; 
+        const userId = req.user.sub; 
 
-        if (!req.user || !req.user._id) {
+        if (!userId) {
+            console.error("RoleUpdate Error: Missing user ID in token."); // LOG
             return res.status(401).json({ message: "Unauthorized or missing user context." });
         }
+        
+        const currentUser = await User.findById(userId).select('roles');
+        if (currentUser) {
+            console.log(`[Role Update] User ID ${userId}: Current Roles: ${currentUser.roles}`); // LOG
+            console.log(`[Role Update] Requesting Role Change to: ${role}`); // LOG
+        }
 
-        // 💡 1. නව role එක වලංගු (valid) ද යන්න පරීක්ෂා කිරීම
         if (!Object.values(Role).includes(role)) {
             return res.status(400).json({ message: "Invalid role provided." });
         }
         
-        // 💡 2. User ගේ current roles වලට නව role එක එකතු කිරීම (Array එකක් ලෙස)
-        // Set Operators භාවිතයෙන් array එකක් තුළ නැවත එම role එකම duplicate වීම වළක්වයි.
+        const updateQuery = { $set: { roles: [role] } }; 
+        
         const updatedUser = await User.findByIdAndUpdate(
-            req.user._id,
-            { $addToSet: { roles: role } }, // $addToSet: අලුත් role එකක් එකතු කරයි, නමුත් duplicate කරන්නේ නැත.
+            userId,
+            updateQuery,
             { new: true, select: "-password" }
         ) as IUSER | null;
 
         if (!updatedUser) {
             return res.status(404).json({ message: "User not found." });
         }
+        
+        console.log(`[Role Update] Success! New Roles in DB: ${updatedUser.roles}`); // LOG
 
-        // 💡 3. නව JWT Token නිකුත් කිරීම
-        // Role එක වෙනස් වූ නිසා, නව role එක සහිත නව accessToken එකක් අවශ්‍ය වේ.
         const newAccessToken = signAccessToken(updatedUser);
         
         res.status(200).json({
-            message: `User role successfully updated to include ${role}`,
+            message: `User role successfully set to ${role}`,
             data: { 
                 email: updatedUser.email, 
                 roles: updatedUser.roles,
-                accessToken: newAccessToken // නව token එක frontend වෙත යැවීම
+                accessToken: newAccessToken
             }
         });
 
     } catch (err) {
-        console.error(err);
+        console.error(`[Role Update] Failed for User ${req.user.sub}:`, err); // LOG
         res.status(500).json({ message: "Failed to update user role." });
     }
 };
+
+export const getRole = async (req: AUthRequest, res: Response) => {
+    try {
+        if (!req.user || !req.user.sub) {
+            return res.status(401).json({ message: "Unauthorized" });
+        }
+
+        const userId = req.user.sub;
+        
+        // Database එකෙන් user ගේ roles පමණක් retrieve කිරීම
+        const user = await User.findById(userId).select("roles");
+
+        if (!user) {
+            return res.status(404).json({ message: "User not found" });
+        }
+        
+        console.log(`[Get Role] User ID ${userId} requested roles: ${user.roles}`); // LOG
+
+        res.status(200).json({
+            message: "User roles retrieved successfully",
+            data: { 
+                roles: user.roles 
+            }
+        });
+
+    } catch (err) {
+        console.error("[Get Role] Internal server error:", err);
+        res.status(500).json({
+            message: "Internal server error"
+        });
+    }
+}

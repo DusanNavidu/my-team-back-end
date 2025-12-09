@@ -1,0 +1,42 @@
+import mongoose, { Document, Schema } from "mongoose";
+
+export enum EventStatus {
+    UPCOMING = "UPCOMING",
+    PAST = "PAST",
+    BANNED = "BANNED",
+    CANCELLED = "CANCELLED",
+}
+
+export interface IEVENT extends Document {
+    _id: mongoose.Types.ObjectId;
+    userId: mongoose.Types.ObjectId;
+    eventName: string;
+    eventDescription: string;
+    category: string;
+    eventDate: String;
+    eventStartingTime: string;
+    eventCity: string;
+    eventLocation: string;
+    eventImageURL: string;
+    EventStatus: EventStatus;
+    createdAt?: Date;
+    updatedAt?: Date;
+}
+
+const EventSchema = new Schema<IEVENT>(
+    {
+        userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+        eventName: { type: String, required: true },
+        eventDescription: { type: String, required: true },
+        category: { type: String, required: true },
+        eventDate: { type: Date, required: true },
+        eventStartingTime: { type: String, required: true },
+        eventCity: { type: String, required: true },
+        eventLocation: { type: String, required: true },
+        eventImageURL: { type: String },
+        EventStatus: { type: String, enum: Object.values(EventStatus), default: EventStatus.UPCOMING },
+    },
+    { timestamps: true }
+);
+
+export const Event = mongoose.model<IEVENT>("Event", EventSchema);
