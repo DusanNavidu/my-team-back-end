@@ -26,7 +26,6 @@ export const generateContent = async (req: Request, res: Response) => {
      }
    )
 
-   // Extract generated content from the response
    const genratedContent =
      aiResponse.data?.candidates?.[0]?.content?.[0]?.text ||
      aiResponse.data?.candidates?.[0]?.content?.parts?.[0]?.text ||
