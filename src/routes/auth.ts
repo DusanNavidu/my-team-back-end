@@ -6,7 +6,10 @@ import {
   registerAdmin,
   roleUpdate,
   registerUser,
-  getRole
+  getRole,
+  getAllUsers,
+  updateUser,
+  changeUserStatus,
 } from "../controllers/auth.controller"
 import { authenticate } from "../middleware/auth"
 import { requireRole } from "../middleware/role"
@@ -26,6 +29,22 @@ router.post(
   requireRole([Role.ADMIN]),
   registerAdmin
 )
+
+router.get(
+  "/admin/getallusers", 
+  authenticate, 
+  requireRole([Role.ADMIN]), 
+  getAllUsers
+);
+
+router.put(
+  "/admin/user/:userId",
+  authenticate,
+  requireRole([Role.ADMIN]),
+  updateUser
+);
+
+router.put("/admin/user/:userId/status", authenticate, requireRole([Role.ADMIN]), changeUserStatus);
 
 router.post("/roleupdate", authenticate, roleUpdate);
 

@@ -13,7 +13,7 @@ export interface IEVENT extends Document {
     eventName: string;
     eventDescription: string;
     category: string;
-    eventDate: String;
+    eventDate: Date;
     eventStartingTime: string;
     eventCity: string;
     eventLocation: string;

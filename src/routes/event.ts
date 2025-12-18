@@ -8,13 +8,17 @@ import { authenticate } from "../middleware/auth"
 import { requireRole } from "../middleware/role"
 import { Role } from "../models/user.model"
 import { upload } from "../middleware/upload"
+import { startEventScheduler } from "../middleware/eventScheduler";
+
+// Start the event status scheduler when this module is loaded
+startEventScheduler();
 
 const router = Router()
 
 router.post(
     "/create",
     authenticate,
-    requireRole([Role.ORGANIZER]),
+    // requireRole([Role.ORGANIZER]),
     upload.fields([
         { name: "eventImage", maxCount: 1 }
     ]),

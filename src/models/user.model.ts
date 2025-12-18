@@ -8,10 +8,8 @@ export enum Role {
 }
 
 export enum Status {
-  NONE = "NONE",
-  PENDING = "PENDING",
-  APPROVED = "APPROVED",
-  REJECTED = "REJECTED"
+  ACTIVE = "ACTIVE",
+  DEACTIVE = "DEACTIVE",
 }
 
 export interface IUSER extends Document {
@@ -20,19 +18,24 @@ export interface IUSER extends Document {
   email: string
   password: string
   roles: Role[]
-  approved: Status
+  status: Status
+  createdAt?: Date
+  updatedAt?: Date
 }
 
-const userSchema = new Schema<IUSER>({
-  email: { type: String, unique: true, lowercase: true, required: true },
-  fullname: { type: String, required: true },
-  password: { type: String, required: true },
-  roles: { type: [String], enum: Object.values(Role), default: [Role.USER] },
-  approved: {
-    type: String,
-    enum: Object.values(Status),
-    default: Status.APPROVED
-  }
-})
+const userSchema = new Schema<IUSER>(
+  {
+    email: { type: String, unique: true, lowercase: true, required: true },
+    fullname: { type: String, required: true },
+    password: { type: String, required: true },
+    roles: { type: [String], enum: Object.values(Role), default: [Role.USER] },
+    status: {
+      type: String,
+      enum: Object.values(Status),
+      default: Status.ACTIVE
+    }
+  },
+  { timestamps: true }
+)
 
 export const User = mongoose.model<IUSER>("User", userSchema)

@@ -11,12 +11,13 @@ import aiRouter from "./routes/ai"
 import { authenticate } from "./middleware/auth"
 import { requireRole } from "./middleware/role"
 import { Role } from "./models/user.model"
+import { createDefaultAdmin } from "./utils/createDefaultAdmin"
 dotenv.config()
+
+const app = express()
 
 const PORT = process.env.PORT
 const MONGO_URI = process.env.MONGO_URI as string
-
-const app = express()
 
 app.use(express.json())
 app.use(
@@ -41,16 +42,20 @@ app.get("/test-2", authenticate, (req, res) => {})
 
 app.get("/test-3", authenticate, requireRole([Role.ADMIN]), (req, res) => {})
 
-mongoose
-    .connect(MONGO_URI)
-    .then(() => {
-        console.log("DB connected")
-    })
-    .catch((err) => {
-        console.error(err)
-        process.exit(1)
-    })
+const startServer = async () => {
+  try {
+    await mongoose.connect(MONGO_URI);
+    console.log("✅ MongoDB Connected");
 
-app.listen(PORT, () => {
-    console.log("Server is running")
-})
+    await createDefaultAdmin();
+
+    app.listen(PORT, () => {
+      console.log(`🚀 Server running on port ${PORT}`);
+    });
+  } catch (error) {
+    console.error("❌ Failed to start server:", error);
+    process.exit(1);
+  }
+};
+
+startServer();

@@ -93,7 +93,6 @@ export const getOrganizerEvents = async (req: AUthRequest, res: Response) => {
     try {
         const userId = req.user.sub;
         
-        // BANNED හැර අනෙකුත් status ලබා ගැනීම
         const validStatuses = [
             EventStatus.UPCOMING,
             EventStatus.PAST,
@@ -101,11 +100,11 @@ export const getOrganizerEvents = async (req: AUthRequest, res: Response) => {
             EventStatus.BANNED
         ];
 
-        // Query: logged-in user ID සහ valid statuses මත පදනම්ව filter කිරීම
         const events = await Event.find({ 
-            userId: new Types.ObjectId(userId), // JWT sub (string) to ObjectId
-            EventStatus: { $in: validStatuses }
-        }).sort({ eventDate: -1, eventStartingTime: -1 }); // නවතම events මුලට
+            userId: new Types.ObjectId(userId), 
+            EventStatus: { $in: validStatuses },
+            createdAt: { $exists: true }
+        }).sort({ eventDate: -1, eventStartingTime: -1 });
 
         res.status(200).json({ 
             message: "Organizer events retrieved successfully", 

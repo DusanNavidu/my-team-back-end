@@ -103,12 +103,10 @@ export const getMyOrganizerDetails = async (req: AUthRequest, res: Response) => 
     try {
         const userId = req.user.sub;
         
-        // 1. Organizer role එක තිබේදැයි පරීක්ෂා කිරීම (අනවශ්‍ය DB access අඩු කිරීමට)
         if (!req.user.roles.includes(Role.ORGANIZER)) {
              return res.status(403).json({ message: "Access Denied. User is not registered as an Organizer." });
         }
 
-        // 2. Organizer Model එකෙන් userId එකට අදාළ details සොයා ගැනීම
         const organizer = await Organizer.findOne({ userId });
 
         if (!organizer) {
@@ -124,5 +122,83 @@ export const getMyOrganizerDetails = async (req: AUthRequest, res: Response) => 
     } catch (err) {
         console.error("Error fetching organizer profile:", err);
         res.status(500).json({ message: "Internal Server Error" });
+    }
+};
+
+export const updateOrganizer = async (req: AUthRequest, res: Response) => {
+    try {
+        const userId = req.user.sub;
+        const { committeeName, contact_no, eventPlace } = req.body;
+        
+        // 1. Find existing organizer profile
+        const existingOrganizer = await Organizer.findOne({ userId });
+
+        if (!existingOrganizer) {
+             return res.status(404).json({ message: "Organizer profile not found. Please register first." });
+        }
+
+        let updateFields: any = {};
+        
+        // 2. Collect field updates
+        if (committeeName) updateFields.committeeName = committeeName;
+        if (contact_no) updateFields.contact_no = contact_no;
+        if (eventPlace) updateFields.eventPlace = eventPlace;
+
+        const files = req.files as {
+            [fieldname: string]: Express.Multer.File[];
+        };
+
+        // 3. Handle Logo Image Upload (if new file provided)
+        if (files?.committeeLogoImage?.[0]) {
+            const logoFile = files.committeeLogoImage[0];
+            const logoUpload: any = await new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    { folder: "organizer_logos" },
+                    (error, result) => {
+                        if (error) return reject(error);
+                        resolve(result);
+                    }
+                );
+                stream.end(logoFile.buffer);
+            });
+            updateFields.committeeLogoImageURL = logoUpload.secure_url;
+            console.log("New Logo uploaded:", updateFields.committeeLogoImageURL);
+        }
+        
+        // 4. Handle Banner Image Upload (if new file provided)
+        if (files?.committeeBannerImage?.[0]) {
+            const bannerFile = files.committeeBannerImage[0];
+            const bannerUpload: any = await new Promise((resolve, reject) => {
+                const stream = cloudinary.uploader.upload_stream(
+                    { folder: "organizer_banners" },
+                    (error, result) => {
+                        if (error) return reject(error);
+                        resolve(result);
+                    }
+                );
+                stream.end(bannerFile.buffer);
+            });
+            updateFields.committeeBannerImageURL = bannerUpload.secure_url;
+            console.log("New Banner uploaded:", updateFields.committeeBannerImageURL);
+        }
+
+        // 5. Update the Database Document
+        const updatedOrganizer = await Organizer.findOneAndUpdate(
+            { userId: userId },
+            { $set: updateFields },
+            { new: true, runValidators: true } // {new: true} returns the updated document
+        );
+
+        res.status(200).json({
+            message: "Organizer profile updated successfully",
+            data: updatedOrganizer,
+        });
+
+    } catch (err) {
+        console.error("Organizer Update Catch Error:", err);
+        res.status(500).json({
+            message: "Failed to update organizer profile",
+            error: err instanceof Error ? err.message : "Unknown error",
+        });
     }
 };
