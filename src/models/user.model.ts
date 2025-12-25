@@ -35,7 +35,18 @@ const userSchema = new Schema<IUSER>(
       default: Status.ACTIVE
     }
   },
-  { timestamps: true }
+  { 
+    timestamps: true,
+    toJSON: { virtuals: true },
+    toObject: { virtuals: true }
+  }
 )
+
+userSchema.virtual('organizerProfile', {
+  ref: 'Organizer',
+  localField: '_id',
+  foreignField: 'userId',
+  justOne: true
+});
 
 export const User = mongoose.model<IUSER>("User", userSchema)

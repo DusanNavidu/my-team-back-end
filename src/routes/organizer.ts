@@ -2,12 +2,14 @@ import { Router } from "express"
 import {
     createOrganizer,
     getMyOrganizerDetails,
-    updateOrganizer
+    getOrganizerDetailsVisitor,
+    updateOrganizer,
 } from "../controllers/organizer.controller"
 import { authenticate } from "../middleware/auth"
 import { requireRole } from "../middleware/role"
 import { Role } from "../models/user.model"
 import { upload } from "../middleware/upload"
+import { getEventsByOrganizerId } from "../controllers/event.controller"
 
 const router = Router()
 
@@ -38,5 +40,11 @@ router.put(
     ]),
     updateOrganizer
 )
+
+router.get(
+    "/organizer/:organizerId",
+    authenticate,
+    getEventsByOrganizerId
+);
 
 export default router

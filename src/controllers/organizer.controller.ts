@@ -3,6 +3,7 @@ import { AUthRequest } from "../middleware/auth";
 import cloudinary from "../config/cloudinary";
 import { Organizer } from "../models/organizer.model";
 import { User, Role } from "../models/user.model";
+import mongoose from "mongoose";
 
 export const createOrganizer = async (req: AUthRequest, res: Response) => {
     try {
@@ -130,7 +131,6 @@ export const updateOrganizer = async (req: AUthRequest, res: Response) => {
         const userId = req.user.sub;
         const { committeeName, contact_no, eventPlace } = req.body;
         
-        // 1. Find existing organizer profile
         const existingOrganizer = await Organizer.findOne({ userId });
 
         if (!existingOrganizer) {
@@ -139,7 +139,6 @@ export const updateOrganizer = async (req: AUthRequest, res: Response) => {
 
         let updateFields: any = {};
         
-        // 2. Collect field updates
         if (committeeName) updateFields.committeeName = committeeName;
         if (contact_no) updateFields.contact_no = contact_no;
         if (eventPlace) updateFields.eventPlace = eventPlace;
@@ -148,7 +147,6 @@ export const updateOrganizer = async (req: AUthRequest, res: Response) => {
             [fieldname: string]: Express.Multer.File[];
         };
 
-        // 3. Handle Logo Image Upload (if new file provided)
         if (files?.committeeLogoImage?.[0]) {
             const logoFile = files.committeeLogoImage[0];
             const logoUpload: any = await new Promise((resolve, reject) => {
@@ -165,7 +163,6 @@ export const updateOrganizer = async (req: AUthRequest, res: Response) => {
             console.log("New Logo uploaded:", updateFields.committeeLogoImageURL);
         }
         
-        // 4. Handle Banner Image Upload (if new file provided)
         if (files?.committeeBannerImage?.[0]) {
             const bannerFile = files.committeeBannerImage[0];
             const bannerUpload: any = await new Promise((resolve, reject) => {
@@ -182,11 +179,10 @@ export const updateOrganizer = async (req: AUthRequest, res: Response) => {
             console.log("New Banner uploaded:", updateFields.committeeBannerImageURL);
         }
 
-        // 5. Update the Database Document
         const updatedOrganizer = await Organizer.findOneAndUpdate(
             { userId: userId },
             { $set: updateFields },
-            { new: true, runValidators: true } // {new: true} returns the updated document
+            { new: true, runValidators: true }
         );
 
         res.status(200).json({
@@ -201,4 +197,28 @@ export const updateOrganizer = async (req: AUthRequest, res: Response) => {
             error: err instanceof Error ? err.message : "Unknown error",
         });
     }
+};
+
+export const getOrganizerDetailsVisitor = async (req: Request, res: Response) => {
+  try {
+    const { organizerId } = req.params;
+
+    if (!mongoose.Types.ObjectId.isValid(organizerId)) {
+      return res.status(400).json({ message: "Invalid Organizer ID format" });
+    }
+
+    const organizer = await Organizer.findById(organizerId);
+
+    if (!organizer) {
+      return res.status(404).json({ message: "Organizer profile not found" });
+    }
+
+    res.status(200).json({
+      message: "Organizer details retrieved successfully",
+      data: organizer,
+    });
+  } catch (err) {
+    console.error("Error fetching organizer profile:", err);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
 };

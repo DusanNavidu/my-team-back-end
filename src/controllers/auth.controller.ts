@@ -232,18 +232,290 @@ export const getRole = async (req: AUthRequest, res: Response) => {
 
 export const getAllUsers = async (req: Request, res: Response) => {
   try {
-    const users = await User.find({
-    roles: { $ne: Role.ADMIN },
-}).select("-password");
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = 20;
+    const skip = (page - 1) * limit;
+
+    const query = { roles: { $ne: Role.ADMIN } };
+
+    const users = await User.find(query)
+      .select("-password")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await User.countDocuments(query);
+
     res.status(200).json({
       message: "Users retrieved successfully",
       data: users,
+      pagination: {
+        totalUsers: total,
+        totalPages: Math.ceil(total / limit),
+        currentPage: page,
+      },
     });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({
-      message: "Internal server error",
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getAllOrganizers = async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = 20;
+    const skip = (page - 1) * limit;
+
+    const query = { roles: Role.ORGANIZER };
+
+    const organizers = await User.find(query)
+      .select("-password")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await User.countDocuments(query);
+
+    res.status(200).json({
+      message: "Organizers retrieved successfully",
+      data: organizers,
+      pagination: {
+        totalOrganizers: total,
+        totalPages: Math.ceil(total / limit),
+        currentPage: page,
+      },
     });
+  } catch (err) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getAllPlayers = async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = 20;
+    const skip = (page - 1) * limit;
+
+    const query = { roles: Role.PLAYER };
+
+    const players = await User.find(query)
+      .select("-password")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+
+    const total = await User.countDocuments(query);
+
+    res.status(200).json({
+      message: "Players retrieved successfully",
+      data: players,
+      pagination: {
+        totalPlayers: total,
+        totalPages: Math.ceil(total / limit),
+        currentPage: page,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getAllUsersByRole = async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = 20;
+    const skip = (page - 1) * limit;
+
+    const query = { roles: Role.USER };
+
+    const users = await User.find(query)
+      .select("-password")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+    const total = await User.countDocuments(query);
+
+    res.status(200).json({
+      message: "Users retrieved successfully",
+      data: users,
+      pagination: {
+        totalUsers: total,
+        totalPages: Math.ceil(total / limit),
+        currentPage: page,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getAllactiveUsers = async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = 20;
+    const skip = (page - 1) * limit;
+
+    const query = { status: Status.ACTIVE, roles: { $ne: Role.ADMIN } };
+
+    const users = await User.find(query)
+      .select("-password")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+    const total = await User.countDocuments(query);
+
+    res.status(200).json({
+      message: "Active users retrieved successfully",
+      data: users,
+      pagination: {
+        totalUsers: total,
+        totalPages: Math.ceil(total / limit),
+        currentPage: page,
+      },
+    });
+  }
+  catch (err) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+}
+
+export const getAllDeactiveUsers = async (req: Request, res: Response) => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = 20;
+    const skip = (page - 1) * limit;
+
+    const query = { status: Status.DEACTIVE, roles: { $ne: Role.ADMIN } };
+
+    const users = await User.find(query)
+      .select("-password")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+    const total = await User.countDocuments(query);
+    
+    res.status(200).json({
+      message: "Deactive users retrieved successfully",
+      data: users,
+      pagination: {
+        totalUsers: total,
+        totalPages: Math.ceil(total / limit),
+        currentPage: page,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const searchUsers = async (req: Request, res: Response) => {
+  try {
+    const { query } = req.query;
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = 20;
+    const skip = (page - 1) * limit;
+
+    const searchQuery = {
+      $and: [
+        { roles: { $ne: Role.ADMIN } },
+        {
+          $or: [
+            { fullname: { $regex: query as string, $options: "i" } },
+            { email: { $regex: query as string, $options: "i" } },
+          ],
+        },
+      ],
+    };
+    const users = await User.find(searchQuery)
+      .select("-password")
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit);
+    const total = await User.countDocuments(searchQuery);
+
+    res.status(200).json({
+      message: "Users retrieved successfully",
+      data: users,
+      pagination: {
+        totalUsers: total,
+        totalPages: Math.ceil(total / limit),
+        currentPage: page,
+      },
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getAllUsersCount = async (req: Request, res: Response) => {
+  try {
+    const total = await User.countDocuments({});
+    res.status(200).json({
+      message: "Total users count retrieved successfully",
+      data: { totalUsers: total },
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getAllOrganizersCount = async (req: Request, res: Response) => {
+  try {
+    const total = await User.countDocuments({ roles: Role.ORGANIZER });
+    res.status(200).json({
+      message: "Total organizers count retrieved successfully",
+      data: { totalOrganizers: total },
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getAllPlayersCount = async (req: Request, res: Response) => {
+  try {
+    const total = await User.countDocuments({ roles: Role.PLAYER });
+    res.status(200).json({
+      message: "Total players count retrieved successfully",
+      data: {totalPlayers: total},
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getAllUsersByRoleCount = async (req: Request, res: Response) => {
+  try {
+    const total = await User.countDocuments({ roles: Role.USER });
+    res.status(200).json({
+      message: "Total users count retrieved successfully",
+      data: { totalUsersByRole: total },
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getAllActiveUsersCount = async (req: Request, res: Response) => {
+  try {
+    const total = await User.countDocuments({ status: Status.ACTIVE });
+    res.status(200).json({
+      message: "Total active users count retrieved successfully",
+      data: { totalActiveUsers: total },
+    });
+  } catch (err) {
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+export const getAllDeactiveUsersCount = async (req: Request, res: Response) => {
+  try {
+    const total = await User.countDocuments({ status: Status.DEACTIVE });
+    res.status(200).json({
+      message: "Total deactive users count retrieved successfully",
+      data: { totalDeactiveUsers: total },
+    })
+  } catch (err) {
+    res.status(500).json({ message: "Internal server error" });
   }
 };
 
@@ -340,5 +612,38 @@ export const changeUserStatus = async (req: Request, res: Response) => {
   } catch (err) {
     console.error("ChangeUserStatus Error:", err);
     res.status(500).json({ message: "Failed to update user status" });
+  }
+};
+
+export const roleUpdateToPlayer = async (req: Request, res: Response) => {
+  try {
+    const { userId } = req.params;
+
+    if (!userId) {
+      return res.status(400).json({ message: "User ID is required." });
+    }
+
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      { $set: { roles: [Role.PLAYER] } }, 
+      { new: true, select: "-password" }
+    );
+
+    if (!updatedUser) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
+    const newAccessToken = signAccessToken(updatedUser);
+
+    res.status(200).json({
+      message: "User role updated to PLAYER successfully",
+      data: {
+        user: updatedUser,
+        accessToken: newAccessToken,
+      },
+    });
+  } catch (err) {
+    console.error("RoleUpdateToPlayer Error:", err);
+    res.status(500).json({ message: "Failed to update user role" });
   }
 };

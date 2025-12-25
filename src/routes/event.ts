@@ -2,6 +2,7 @@ import { Router } from "express"
 import {
     createEvent,
     getAllEvents,
+    getEventsByOrganizerId,
     getOrganizerEvents,
 } from "../controllers/event.controller"
 import { authenticate } from "../middleware/auth"
@@ -37,5 +38,12 @@ router.get(
     authenticate,
     getOrganizerEvents // Function to filter by userId
 )
+
+// නව Route එක
+router.get(
+    "/organizer/:organizerId",
+    authenticate,
+    getEventsByOrganizerId
+);
 
 export default router
