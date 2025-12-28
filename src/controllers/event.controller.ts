@@ -8,7 +8,7 @@ import { Organizer } from "../models/organizer.model";
 export const createEvent = async (req: AUthRequest, res: Response) => {
     try {
         const { eventName, eventDescription, category, eventDate, eventStartingTime, eventCity, eventLocation } = req.body;
-        console.log("Received data:", { eventName, eventDescription, category, eventDate, eventStartingTime, eventCity, eventLocation });
+        // console.log("Received data:", { eventName, eventDescription, category, eventDate, eventStartingTime, eventCity, eventLocation });
 
         let eventImageURL = "";
 

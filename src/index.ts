@@ -7,6 +7,8 @@ import mongoose from "mongoose"
 import authRouter from "./routes/auth"
 import organizerRouter from "./routes/organizer"
 import eventRouter from "./routes/event"
+import playerRouter from "./routes/playerDetails"
+import post from "./routes/post"
 import aiRouter from "./routes/ai"
 import { authenticate } from "./middleware/auth"
 import { requireRole } from "./middleware/role"
@@ -31,6 +33,8 @@ app.use("/api/v1/auth", authRouter)
 app.use("/api/v1/ai", aiRouter)
 app.use("/api/v1/organizer", organizerRouter)
 app.use("/api/v1/event", eventRouter)
+app.use("/api/v1/player", playerRouter)
+app.use("/api/v1/post", post)
 
 app.get("/", (req, res) => {
     res.send("Backend is running...")
