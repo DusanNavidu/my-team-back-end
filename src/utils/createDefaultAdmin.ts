@@ -27,7 +27,7 @@ export const createDefaultAdmin = async () => {
       email: adminEmail,
       password: hashedPassword,
       roles: [Role.ADMIN],
-      approved: Status.APPROVED
+      approved: Status.ACTIVE
     });
 
     console.log("Default admin user created successfully");

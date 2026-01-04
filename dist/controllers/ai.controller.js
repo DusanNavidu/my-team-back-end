@@ -21,10 +21,9 @@ const generateContent = async (req, res) => {
         }, {
             headers: {
                 "Content-Type": "application/json",
-                "X-goog-api-key": "AIzaSyAEUIzAoidBjuX4IZIYb7jP7SN6o_qQgMI" // Replace with actual API key
+                "X-goog-api-key": "" // Replace with actual API key
             }
         });
-        // Extract generated content from the response
         const genratedContent = aiResponse.data?.candidates?.[0]?.content?.[0]?.text ||
             aiResponse.data?.candidates?.[0]?.content?.parts?.[0]?.text ||
             "No data";

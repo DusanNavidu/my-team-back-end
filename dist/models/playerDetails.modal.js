@@ -33,45 +33,14 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.User = exports.Status = exports.Role = void 0;
+exports.PlayerDetails = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-var Role;
-(function (Role) {
-    Role["ADMIN"] = "ADMIN";
-    Role["PLAYER"] = "PLAYER";
-    Role["ORGANIZER"] = "ORGANIZER";
-    Role["USER"] = "USER";
-})(Role || (exports.Role = Role = {}));
-var Status;
-(function (Status) {
-    Status["ACTIVE"] = "ACTIVE";
-    Status["DEACTIVE"] = "DEACTIVE";
-})(Status || (exports.Status = Status = {}));
-const userSchema = new mongoose_1.Schema({
-    email: { type: String, unique: true, lowercase: true, required: true },
-    fullname: { type: String, required: true },
-    password: { type: String, required: true },
-    roles: { type: [String], enum: Object.values(Role), default: [Role.USER] },
-    status: {
-        type: String,
-        enum: Object.values(Status),
-        default: Status.ACTIVE
-    }
-}, {
-    timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true }
-});
-userSchema.virtual('organizerProfile', {
-    ref: 'Organizer',
-    localField: '_id',
-    foreignField: 'userId',
-    justOne: true
-});
-userSchema.virtual('playerProfile', {
-    ref: 'PlayerDetails',
-    localField: '_id',
-    foreignField: 'userId',
-    justOne: true
-});
-exports.User = mongoose_1.default.model("User", userSchema);
+const PlayerDetailsSchema = new mongoose_1.Schema({
+    userId: { type: mongoose_1.Schema.Types.ObjectId, ref: "User", unique: true, required: true },
+    contactNumber: { type: String, required: true },
+    playerAbout: { type: String, required: true },
+    playerTagsSports: { type: [String], default: [] },
+    playerLogoImageFileURL: { type: String, default: "" },
+    playerBannerImageFileURL: { type: String, default: "" },
+}, { timestamps: true });
+exports.PlayerDetails = mongoose_1.default.model("PlayerDetails", PlayerDetailsSchema);

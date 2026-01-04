@@ -33,45 +33,13 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.User = exports.Status = exports.Role = void 0;
+exports.Application = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-var Role;
-(function (Role) {
-    Role["ADMIN"] = "ADMIN";
-    Role["PLAYER"] = "PLAYER";
-    Role["ORGANIZER"] = "ORGANIZER";
-    Role["USER"] = "USER";
-})(Role || (exports.Role = Role = {}));
-var Status;
-(function (Status) {
-    Status["ACTIVE"] = "ACTIVE";
-    Status["DEACTIVE"] = "DEACTIVE";
-})(Status || (exports.Status = Status = {}));
-const userSchema = new mongoose_1.Schema({
-    email: { type: String, unique: true, lowercase: true, required: true },
-    fullname: { type: String, required: true },
-    password: { type: String, required: true },
-    roles: { type: [String], enum: Object.values(Role), default: [Role.USER] },
-    status: {
-        type: String,
-        enum: Object.values(Status),
-        default: Status.ACTIVE
-    }
-}, {
-    timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true }
-});
-userSchema.virtual('organizerProfile', {
-    ref: 'Organizer',
-    localField: '_id',
-    foreignField: 'userId',
-    justOne: true
-});
-userSchema.virtual('playerProfile', {
-    ref: 'PlayerDetails',
-    localField: '_id',
-    foreignField: 'userId',
-    justOne: true
-});
-exports.User = mongoose_1.default.model("User", userSchema);
+const ApplicationSchema = new mongoose_1.Schema({
+    eventId: { type: mongoose_1.Schema.Types.ObjectId, ref: "Event", required: true },
+    playerId: { type: mongoose_1.Schema.Types.ObjectId, ref: "User", required: true },
+    status: { type: String, enum: ["PENDING", "ACCEPTED", "REJECTED"], default: "PENDING" },
+}, { timestamps: true });
+// එකම Player හට එකම Event එකට දෙපාරක් apply කළ නොහැකි වන සේ Index එකක් යොදමු
+ApplicationSchema.index({ eventId: 1, playerId: 1 }, { unique: true });
+exports.Application = mongoose_1.default.model("Application", ApplicationSchema);

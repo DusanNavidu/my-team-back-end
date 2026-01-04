@@ -33,45 +33,27 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.User = exports.Status = exports.Role = void 0;
+exports.Event = exports.EventStatus = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-var Role;
-(function (Role) {
-    Role["ADMIN"] = "ADMIN";
-    Role["PLAYER"] = "PLAYER";
-    Role["ORGANIZER"] = "ORGANIZER";
-    Role["USER"] = "USER";
-})(Role || (exports.Role = Role = {}));
-var Status;
-(function (Status) {
-    Status["ACTIVE"] = "ACTIVE";
-    Status["DEACTIVE"] = "DEACTIVE";
-})(Status || (exports.Status = Status = {}));
-const userSchema = new mongoose_1.Schema({
-    email: { type: String, unique: true, lowercase: true, required: true },
-    fullname: { type: String, required: true },
-    password: { type: String, required: true },
-    roles: { type: [String], enum: Object.values(Role), default: [Role.USER] },
-    status: {
-        type: String,
-        enum: Object.values(Status),
-        default: Status.ACTIVE
-    }
-}, {
-    timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true }
-});
-userSchema.virtual('organizerProfile', {
-    ref: 'Organizer',
-    localField: '_id',
-    foreignField: 'userId',
-    justOne: true
-});
-userSchema.virtual('playerProfile', {
-    ref: 'PlayerDetails',
-    localField: '_id',
-    foreignField: 'userId',
-    justOne: true
-});
-exports.User = mongoose_1.default.model("User", userSchema);
+var EventStatus;
+(function (EventStatus) {
+    EventStatus["UPCOMING"] = "UPCOMING";
+    EventStatus["PAST"] = "PAST";
+    EventStatus["BANNED"] = "BANNED";
+    EventStatus["CANCELLED"] = "CANCELLED";
+})(EventStatus || (exports.EventStatus = EventStatus = {}));
+const EventSchema = new mongoose_1.Schema({
+    userId: { type: mongoose_1.Schema.Types.ObjectId, ref: "User", required: true },
+    eventName: { type: String, required: true },
+    eventDescription: { type: String, required: true },
+    category: { type: String, required: true },
+    eventDate: { type: Date, required: true },
+    eventStartingTime: { type: String, required: true },
+    eventCity: { type: String, required: true },
+    eventLocation: { type: String, required: true },
+    eventImageURL: { type: String },
+    EventStatus: { type: String, enum: Object.values(EventStatus), default: EventStatus.UPCOMING },
+    likes: [{ type: mongoose_1.default.Types.ObjectId, ref: "User", default: [] }],
+    comments: [{ type: mongoose_1.default.Types.ObjectId, ref: "Comment", default: [] }],
+}, { timestamps: true });
+exports.Event = mongoose_1.default.model("Event", EventSchema);

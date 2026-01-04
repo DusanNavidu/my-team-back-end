@@ -33,45 +33,46 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.User = exports.Status = exports.Role = void 0;
 const mongoose_1 = __importStar(require("mongoose"));
-var Role;
-(function (Role) {
-    Role["ADMIN"] = "ADMIN";
-    Role["PLAYER"] = "PLAYER";
-    Role["ORGANIZER"] = "ORGANIZER";
-    Role["USER"] = "USER";
-})(Role || (exports.Role = Role = {}));
-var Status;
-(function (Status) {
-    Status["ACTIVE"] = "ACTIVE";
-    Status["DEACTIVE"] = "DEACTIVE";
-})(Status || (exports.Status = Status = {}));
-const userSchema = new mongoose_1.Schema({
-    email: { type: String, unique: true, lowercase: true, required: true },
-    fullname: { type: String, required: true },
-    password: { type: String, required: true },
-    roles: { type: [String], enum: Object.values(Role), default: [Role.USER] },
+var PostStatus;
+(function (PostStatus) {
+    PostStatus["PRIVATE"] = "private";
+    PostStatus["PUBLIC"] = "public";
+    PostStatus["UNLISTED"] = "unlisted";
+    PostStatus["BANNED"] = "banned";
+})(PostStatus || (PostStatus = {}));
+var PostType;
+(function (PostType) {
+    PostType["IMAGE"] = "image";
+    PostType["VIDEO"] = "video";
+    PostType["TEXT"] = "text";
+})(PostType || (PostType = {}));
+var postingType;
+(function (postingType) {
+    postingType["Story"] = "story";
+    postingType["Post"] = "post";
+    postingType["Both"] = "both";
+})(postingType || (postingType = {}));
+const PostSchema = new mongoose_1.Schema({
+    userId: { type: mongoose_1.default.Types.ObjectId, ref: "User", required: true },
+    playerPostImageFileURL: { type: String, required: true },
+    title: { type: String, default: "" },
+    mention: { type: [String], default: [] },
+    feeling: { type: String, default: "" },
+    description: { type: String, default: "" },
+    tagInput: { type: [String], default: [] },
+    userRole: { type: String, default: "" },
+    postingType: {
+        type: String,
+        enum: Object.values(postingType),
+        default: postingType.Post
+    },
     status: {
         type: String,
-        enum: Object.values(Status),
-        default: Status.ACTIVE
-    }
-}, {
-    timestamps: true,
-    toJSON: { virtuals: true },
-    toObject: { virtuals: true }
-});
-userSchema.virtual('organizerProfile', {
-    ref: 'Organizer',
-    localField: '_id',
-    foreignField: 'userId',
-    justOne: true
-});
-userSchema.virtual('playerProfile', {
-    ref: 'PlayerDetails',
-    localField: '_id',
-    foreignField: 'userId',
-    justOne: true
-});
-exports.User = mongoose_1.default.model("User", userSchema);
+        enum: Object.values(PostStatus),
+        default: PostStatus.PUBLIC
+    },
+    likes: [{ type: mongoose_1.default.Types.ObjectId, ref: "User", default: [] }],
+    comments: [{ type: mongoose_1.default.Types.ObjectId, ref: "Comment", default: [] }],
+}, { timestamps: true });
+exports.default = mongoose_1.default.model("Post", PostSchema);

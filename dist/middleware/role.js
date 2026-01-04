@@ -1,14 +1,16 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.requireRole = void 0;
+// need multiple role check
 const requireRole = (roles) => {
     return (req, res, next) => {
         if (!req.user) {
             return res.status(401).json({ message: "Unauthorized" });
         }
-        if (!req.user.roles?.some((role) => roles.includes(role))) { // check if user has at least one of the required roles
+        const hasRole = roles.some((role) => req.user.roles?.includes(role));
+        if (!hasRole) {
             return res.status(403).json({
-                message: `Require ${roles.join(", ")} role`
+                message: `Require ${roles} role`
             });
         }
         next();

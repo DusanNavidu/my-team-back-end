@@ -13,23 +13,17 @@ const authenticate = (req, res, next) => {
     if (!authHeader) {
         return res.status(401).json({ message: "No token provided" });
     }
-    // Bearer dgcfhvgjygukhiluytkuy
-    const token = authHeader.split(" ")[1]; // ["Bearer", "dgcfhvgjygukhiluytkuy"]
+    const token = authHeader.split(" ")[1];
     try {
         const payload = jsonwebtoken_1.default.verify(token, JWT_SECRET);
-        //  {
-        //   sub: user._id.toString(),
-        //   roles: user.roles
-        // }
         req.user = payload;
         next();
     }
     catch (err) {
         console.error(err);
         res.status(401).json({
-            message: "Invalid or expired token"
+            message: "Invalid or expire token"
         });
     }
 };
 exports.authenticate = authenticate;
-// res, next - return
