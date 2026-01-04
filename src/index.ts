@@ -1,9 +1,9 @@
 // src/index.ts
-
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
 import mongoose from "mongoose";
+
 import authRouter from "./routes/auth";
 import organizerRouter from "./routes/organizer";
 import eventRouter from "./routes/event";
@@ -18,31 +18,33 @@ dotenv.config();
 const app = express();
 const MONGO_URI = process.env.MONGO_URI as string;
 
+/* =======================
+   ✅ CORS (MUST BE FIRST)
+======================= */
+app.use(
+  cors({
+    origin: [
+      "http://localhost:5173",
+      "http://localhost:5174",
+      "https://my-team-front-end-seven.vercel.app"
+    ],
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+  })
+);
+
+// 🔥 Preflight support
+app.options("*", cors());
+
+/* =======================
+   Middlewares
+======================= */
 app.use(express.json());
 
-// src/index.ts හි CORS කොටස මෙසේ වෙනස් කරන්න:
-
-app.use(cors({
-    origin: function (origin, callback) {
-        const allowedOrigins = [
-            "http://localhost:5173", 
-            "http://localhost:5174", 
-            "https://my-team-front-end-seven.vercel.app",
-            "https://my-team-front-end-seven.vercel.app/login"
-        ];
-        // mobile apps හෝ postman වලින් එන requests සඳහා origin null විය හැක
-        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-        } else {
-            callback(new Error('Not allowed by CORS'));
-        }
-    },
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-    credentials: true,
-    allowedHeaders: ["Content-Type", "Authorization"]
-}));
-
-// Routes setup
+/* =======================
+   Routes
+======================= */
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/ai", aiRouter);
 app.use("/api/v1/organizer", organizerRouter);
@@ -52,26 +54,35 @@ app.use("/api/v1/post", post);
 app.use("/api/v1/applications", applicationRouter);
 
 app.get("/", (req, res) => {
-    res.send("Backend is running on Vercel...");
+  res.send("Backend is running on Vercel...");
 });
 
-// Database Connection
+/* =======================
+   MongoDB Connection
+======================= */
 let isConnected = false;
+
 const connectToDatabase = async () => {
-    if (isConnected) return;
-    try {
-        await mongoose.connect(MONGO_URI);
-        isConnected = true;
-        console.log("✅ MongoDB Connected");
-        await createDefaultAdmin();
-    } catch (error) {
-        console.error("❌ MongoDB connection error:", error);
-    }
+  if (isConnected) return;
+
+  await mongoose.connect(MONGO_URI);
+  isConnected = true;
+  console.log("✅ MongoDB Connected");
+  await createDefaultAdmin();
 };
 
+// ❗ OPTIONS requests skip DB
 app.use(async (req, res, next) => {
+  if (req.method === "OPTIONS") {
+    return next();
+  }
+
+  try {
     await connectToDatabase();
     next();
+  } catch (err) {
+    next(err);
+  }
 });
 
 export default app;
