@@ -5,6 +5,7 @@ import { signAccessToken, signRefreshToken } from "../utils/tokens";
 import { AUthRequest } from "../middleware/auth";
 import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
+import mongoose from "mongoose";
 dotenv.config();
 
 const JWT_REFRESH_SECRET = process.env.JWT_REFRESH_SECRET as string;
@@ -645,5 +646,93 @@ export const roleUpdateToPlayer = async (req: Request, res: Response) => {
   } catch (err) {
     console.error("RoleUpdateToPlayer Error:", err);
     res.status(500).json({ message: "Failed to update user role" });
+  }
+};
+
+export const getAllPlayersProfiles = async (req: Request, res: Response) => {
+  try {
+    const players = await User.aggregate([
+      // 1. Player Role එක තියෙන අය පමණක් තෝරන්න
+      { $match: { roles: Role.PLAYER } },
+      
+      // 2. PlayerDetails collection එක සමඟ Join කරන්න
+      {
+        $lookup: {
+          from: "playerdetails", // MongoDB collection name (බොහෝ විට lowercase ප්ලූරල් වේ)
+          localField: "_id",
+          foreignField: "userId",
+          as: "profileInfo"
+        }
+      },
+
+      // 3. ලැබෙන Array එක Object එකක් බවට පත් කරන්න
+      { $unwind: { path: "$profileInfo", preserveNullAndEmptyArrays: true } },
+
+      // 4. අවශ්‍ය දත්ත පමණක් තෝරාගන්න (Password ඉවත් කරන්න)
+      {
+        $project: {
+          password: 0,
+          "profileInfo.userId": 0,
+          "profileInfo.createdAt": 0,
+          "profileInfo.updatedAt": 0,
+          "profileInfo.__v": 0
+        }
+      },
+
+      // 5. Random 10 දෙනෙක් තෝරාගන්න
+      { $sample: { size: 10 } }
+    ]);
+
+    res.status(200).json({
+      message: "Player profiles retrieved successfully",
+      data: players,
+    });
+  } catch (err) {
+    console.error("GetAllPlayersProfiles Error:", err);
+    res.status(500).json({ message: "Failed to retrieve player profiles" });
+  }
+};
+
+export const getPlayerProfileById = async (req: Request, res: Response) => {
+  try {
+      const { id } = req.params;
+
+      const player = await User.aggregate([
+          { $match: { _id: new mongoose.Types.ObjectId(id) } },
+          {
+              $lookup: {
+                  from: "playerdetails", // Collection නම පරීක්ෂා කරන්න
+                  localField: "_id",
+                  foreignField: "userId",
+                  as: "profileInfo"
+              }
+          },
+          { $unwind: { path: "$profileInfo", preserveNullAndEmptyArrays: true } },
+          { $project: { password: 0 } }
+      ]);
+
+      if (!player || player.length === 0) {
+          return res.status(404).json({ message: "Player not found" });
+      }
+
+      res.status(200).json({ data: player[0] });
+  } catch (error) {
+      res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const getUsersFullnamesWithId = async (req: Request, res: Response) => {
+  try {
+      const users = await User.find({})
+          .select("fullname _id")
+          .sort({ fullname: 1 });
+
+      res.status(200).json({
+          message: "User fullnames with IDs retrieved successfully",
+          data: users
+      });
+  } catch (err) {
+      console.error("GetUsersFullnamesWithId Error:", err);
+      res.status(500).json({ message: "Internal server error" });
   }
 };

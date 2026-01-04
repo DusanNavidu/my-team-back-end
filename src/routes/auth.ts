@@ -23,6 +23,9 @@ import {
   searchUsers,
   getAllUsersByRoleCount,
   roleUpdateToPlayer,
+  getAllPlayersProfiles,
+  getPlayerProfileById,
+  getUsersFullnamesWithId
 } from "../controllers/auth.controller"
 import { authenticate } from "../middleware/auth"
 import { requireRole } from "../middleware/role"
@@ -170,6 +173,27 @@ router.put(
   "/roleUpdate/player/:userId",
   authenticate,
   roleUpdateToPlayer
+);
+
+router.get(
+  "/player/playersprofiles",
+  authenticate,
+  requireRole([Role.ORGANIZER, Role.PLAYER, Role.USER, Role.ADMIN]),
+  getAllPlayersProfiles
+)
+
+router.get(
+  "/player/profile/:id",
+  authenticate,
+  requireRole([Role.ORGANIZER, Role.PLAYER, Role.USER, Role.ADMIN]),
+  getPlayerProfileById
+);
+
+router.get(
+  "/user/fullnames",
+  authenticate,
+  requireRole([Role.ADMIN, Role.ORGANIZER, Role.PLAYER, Role.USER]),
+  getUsersFullnamesWithId
 );
 
 export default router

@@ -67,26 +67,53 @@ export const createEvent = async (req: AUthRequest, res: Response) => {
 
 export const getAllEvents = async (req: Request, res: Response) => {
     try {
-        const validStatuses = [EventStatus.UPCOMING, EventStatus.PAST, EventStatus.CANCELLED];
+        const validStatuses = ["UPCOMING", "PAST", "CANCELLED"]; // EventStatus enum එකට අනුව
 
-        const events = await Event.find({ EventStatus: { $in: validStatuses } })
-            .populate({
-                path: "userId",
-                select: "fullname email", // User ගේ මූලික විස්තර
-                populate: {
-                    path: "organizerProfile", // User හරහා Organizer Profile එකට යයි
-                    model: "Organizer",
-                    select: "committeeName contact_no eventPlace committeeLogoImageURL committeeBannerImageURL status" 
+        const events = await Event.aggregate([
+            // 1. වලංගු Status ඇති Events පමණක් තෝරන්න
+            { $match: { EventStatus: { $in: validStatuses } } },
+
+            // 2. Random: අහඹු ලෙස Events 20ක් (හෝ ඔබට අවශ්‍ය ගණන) තෝරන්න
+            { $sample: { size: 20 } },
+
+            // 3. User Details Join කිරීම (Lookup)
+            {
+                $lookup: {
+                    from: "users", // User collection නම
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "userId"
                 }
-            })
-            .sort({ eventDate: 1, eventStartingTime: 1 });
+            },
+            { $unwind: "$userId" },
+
+            // 4. Organizer Profile Join කිරීම (Nested Lookup)
+            {
+                $lookup: {
+                    from: "organizers", // Organizer collection නම
+                    localField: "userId._id",
+                    foreignField: "userId",
+                    as: "userId.organizerProfile"
+                }
+            },
+            { $unwind: { path: "$userId.organizerProfile", preserveNullAndEmptyArrays: true } },
+
+            // 5. අවශ්‍ය දත්ත පමණක් තෝරාගැනීම (Project)
+            {
+                $project: {
+                    "userId.password": 0,
+                    "userId.__v": 0,
+                    "userId.organizerProfile.__v": 0
+                }
+            }
+        ]);
 
         res.status(200).json({ 
-            message: "Events retrieved successfully", 
+            message: "Random events retrieved successfully", 
             events 
         });
     } catch (error) {
-        console.error("Error fetching events:", error);
+        console.error("Error fetching random events:", error);
         res.status(500).json({ message: "Internal Server Error" });
     }
 };

@@ -49,4 +49,11 @@ userSchema.virtual('organizerProfile', {
   justOne: true
 });
 
+userSchema.virtual('playerProfile', {
+  ref: 'PlayerDetails',
+  localField: '_id',
+  foreignField: 'userId',
+  justOne: true
+});
+
 export const User = mongoose.model<IUSER>("User", userSchema)

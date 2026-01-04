@@ -7,6 +7,18 @@ enum PostStatus {
     BANNED = "banned"
 }
 
+enum PostType {
+    IMAGE = "image",
+    VIDEO = "video",
+    TEXT = "text"
+}
+
+enum postingType {
+    Story = "story",
+    Post = "post",
+    Both = "both"
+}
+
 export interface IPOST extends Document {
     _id: mongoose.Types.ObjectId;
     userId: mongoose.Types.ObjectId;
@@ -16,6 +28,8 @@ export interface IPOST extends Document {
     feeling?: string;
     description?: string;
     tagInput?: string[];
+    userRole?: string;
+    postingType?: postingType;
     status: PostStatus;
     likes: mongoose.Types.ObjectId[];
     comments: mongoose.Types.ObjectId[];
@@ -32,7 +46,12 @@ const PostSchema: Schema = new Schema(
         feeling: { type: String, default: "" },
         description: { type: String, default: "" },
         tagInput: { type: [String], default: [] },
-        
+        userRole: { type: String, default: "" },
+        postingType: {
+            type: String,
+            enum: Object.values(postingType),
+            default: postingType.Post
+        },
         status: { 
             type: String, 
             enum: Object.values(PostStatus), 

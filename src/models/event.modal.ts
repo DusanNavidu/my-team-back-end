@@ -19,6 +19,8 @@ export interface IEVENT extends Document {
     eventLocation: string;
     eventImageURL: string;
     EventStatus: EventStatus;
+    likes: mongoose.Types.ObjectId[];
+    comments: mongoose.Types.ObjectId[];
     createdAt?: Date;
     updatedAt?: Date;
 }
@@ -35,6 +37,8 @@ const EventSchema = new Schema<IEVENT>(
         eventLocation: { type: String, required: true },
         eventImageURL: { type: String },
         EventStatus: { type: String, enum: Object.values(EventStatus), default: EventStatus.UPCOMING },
+        likes: [{ type: mongoose.Types.ObjectId, ref: "User", default: [] }],
+        comments: [{ type: mongoose.Types.ObjectId, ref: "Comment", default: [] }],
     },
     { timestamps: true }
 );

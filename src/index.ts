@@ -9,6 +9,7 @@ import organizerRouter from "./routes/organizer"
 import eventRouter from "./routes/event"
 import playerRouter from "./routes/playerDetails"
 import post from "./routes/post"
+import applicationRouter from "./routes/application"
 import aiRouter from "./routes/ai"
 import { authenticate } from "./middleware/auth"
 import { requireRole } from "./middleware/role"
@@ -25,7 +26,7 @@ app.use(express.json())
 app.use(
     cors({
         origin: ["http://localhost:5173","http://localhost:5174","https://rad-72-sample-fe.vercel.app/login"],
-        methods: ["GET", "POST", "PUT", "DELETE"]
+        methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     })
 )
 
@@ -35,6 +36,7 @@ app.use("/api/v1/organizer", organizerRouter)
 app.use("/api/v1/event", eventRouter)
 app.use("/api/v1/player", playerRouter)
 app.use("/api/v1/post", post)
+app.use("/api/v1/applications", applicationRouter)
 
 app.get("/", (req, res) => {
     res.send("Backend is running...")
