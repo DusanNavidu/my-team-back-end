@@ -50,7 +50,6 @@ export const getMePosts = async (req: any, res: Response) => {
     try {
         const userId = req.user.sub;
         const posts = await Post.find({ userId }).sort({ createdAt: -1 });
-        // Frontend එක බලාපොරොත්තු වන ආකෘතිය: { data: posts }
         res.status(200).json({ data: posts, message: "Posts retrieved successfully" });
     } catch (error) {
         res.status(500).json({ message: "Internal Server Error" });
