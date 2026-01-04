@@ -27,7 +27,8 @@ app.use(cors({
         const allowedOrigins = [
             "http://localhost:5173", 
             "http://localhost:5174", 
-            "https://my-team-front-end-seven.vercel.app"
+            "https://my-team-front-end-seven.vercel.app",
+            "https://my-team-front-end-seven.vercel.app/login"
         ];
         // mobile apps හෝ postman වලින් එන requests සඳහා origin null විය හැක
         if (!origin || allowedOrigins.indexOf(origin) !== -1) {
