@@ -25,7 +25,7 @@ const MONGO_URI = process.env.MONGO_URI as string
 app.use(express.json())
 app.use(
     cors({
-        origin: ["http://localhost:5173","http://localhost:5174","https://rad-72-sample-fe.vercel.app/login"],
+        origin: ["http://localhost:5173", "http://localhost:5174", "https://my-team-frontend.web.app", "https://my-team-frontend.firebaseapp.com"],
         methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     })
 )
