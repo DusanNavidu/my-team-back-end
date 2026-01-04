@@ -61,11 +61,10 @@ export const getOrganizerApplications = async (req: any, res: Response) => {
     }
 };
 
-// 2. Application Status එක වෙනස් කිරීම (Accept/Reject)
 export const updateApplicationStatus = async (req: Request, res: Response) => {
     try {
         const { id } = req.params;
-        const { status } = req.body; // PENDING, ACCEPTED, REJECTED
+        const { status } = req.body;
 
         const updatedApp = await Application.findByIdAndUpdate(
             id,
