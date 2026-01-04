@@ -33,11 +33,20 @@ import { Role } from "../models/user.model"
 
 const router = Router()
 
-router.post("/register", registerUser)
+router.post(
+  "/register", 
+  registerUser
+)
 
-router.post("/login", login)
+router.post(
+  "/login", 
+  login
+)
 
-router.post("/refresh" , refreshToken )
+router.post(
+  "/refresh", 
+  refreshToken
+)
 
 router.post(
   "/admin/register",

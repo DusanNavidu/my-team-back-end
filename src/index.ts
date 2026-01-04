@@ -15,21 +15,24 @@ import { authenticate } from "./middleware/auth"
 import { requireRole } from "./middleware/role"
 import { Role } from "./models/user.model"
 import { createDefaultAdmin } from "./utils/createDefaultAdmin"
+
 dotenv.config()
 
 const app = express()
 
-const PORT = process.env.PORT
+// MONGO_URI එක Environment Variables වලින් ලබා ගැනීම
 const MONGO_URI = process.env.MONGO_URI as string
 
 app.use(express.json())
 app.use(
     cors({
-        origin: ["http://localhost:5173","http://localhost:5174","https://rad-72-sample-fe.vercel.app/login"],
+        // Frontend URL එක deploy කළාට පසු මෙතනට අනිවාර්යයෙන්ම ඇතුළත් කරන්න
+        origin: ["http://localhost:5173", "http://localhost:5174", "https://rad-72-sample-fe.vercel.app"],
         methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     })
 )
 
+// Routes setup
 app.use("/api/v1/auth", authRouter)
 app.use("/api/v1/ai", aiRouter)
 app.use("/api/v1/organizer", organizerRouter)
@@ -39,32 +42,36 @@ app.use("/api/v1/post", post)
 app.use("/api/v1/applications", applicationRouter)
 
 app.get("/", (req, res) => {
-    res.send("Backend is running...")
+    res.send("Backend is running on Vercel...")
 })
 
-app.get("/test-1", (req, res) => {})
-
-app.get("/test-2", authenticate, (req, res) => {})
-
-app.get("/test-3", authenticate, requireRole([Role.ADMIN]), (req, res) => {})
-
-const startServer = async () => {
-  try {
-    await mongoose.connect(MONGO_URI);
-    console.log("✅ MongoDB Connected");
-
-    await createDefaultAdmin();
-
-    app.listen(PORT, () => {
-      console.log(`🚀 Server running on port ${PORT}`);
-    });
-  } catch (error) {
-    console.error("❌ Failed to start server:", error);
-    process.exit(1);
-  }
+// Database Connection Logic (Vercel Serverless සඳහා ප්‍රශස්ත කළ එකක්)
+let isConnected = false;
+const connectToDatabase = async () => {
+    if (isConnected) return;
+    try {
+        await mongoose.connect(MONGO_URI);
+        isConnected = true;
+        console.log("✅ MongoDB Connected");
+        await createDefaultAdmin();
+    } catch (error) {
+        console.error("❌ MongoDB connection error:", error);
+    }
 };
 
-startServer();
+// Middleware to ensure DB is connected before handling requests
+app.use(async (req, res, next) => {
+    await connectToDatabase();
+    next();
+});
 
-// src/index.ts අන්තිමට මේක එකතු කරන්න
+// Local development එකට පමණක් listen පාවිච්චි කරන්න
+if (process.env.NODE_ENV !== 'production') {
+    const PORT = process.env.PORT || 5000;
+    app.listen(PORT, () => {
+        console.log(`🚀 Local Server running on port ${PORT}`);
+    });
+}
+
+// Vercel එකට අත්‍යවශ්‍ය export එක
 export default app;
