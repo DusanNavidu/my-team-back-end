@@ -27,7 +27,7 @@ app.use(express.json())
 app.use(
     cors({
         // Frontend URL එක deploy කළාට පසු මෙතනට අනිවාර්යයෙන්ම ඇතුළත් කරන්න
-        origin: ["https://my-team-front-end-seven.vercel.app/", "http://localhost:5173", "http://localhost:5174", "https://rad-72-sample-fe.vercel.app"],
+        origin: ["https://my-team-front-end-seven.vercel.app/", "http://localhost:5173", "http://localhost:5174", "https://my-team-front-end-seven.vercel.app"],
         methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
     })
 )
