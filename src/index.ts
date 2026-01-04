@@ -1,51 +1,52 @@
 // src/index.ts
 
-import express from "express"
-import cors from "cors"
-import dotenv from "dotenv"
-import mongoose from "mongoose"
-import authRouter from "./routes/auth"
-import organizerRouter from "./routes/organizer"
-import eventRouter from "./routes/event"
-import playerRouter from "./routes/playerDetails"
-import post from "./routes/post"
-import applicationRouter from "./routes/application"
-import aiRouter from "./routes/ai"
-import { authenticate } from "./middleware/auth"
-import { requireRole } from "./middleware/role"
-import { Role } from "./models/user.model"
-import { createDefaultAdmin } from "./utils/createDefaultAdmin"
+import express from "express";
+import cors from "cors";
+import dotenv from "dotenv";
+import mongoose from "mongoose";
+import authRouter from "./routes/auth";
+import organizerRouter from "./routes/organizer";
+import eventRouter from "./routes/event";
+import playerRouter from "./routes/playerDetails";
+import post from "./routes/post";
+import applicationRouter from "./routes/application";
+import aiRouter from "./routes/ai";
+import { createDefaultAdmin } from "./utils/createDefaultAdmin";
 
-dotenv.config()
+dotenv.config();
 
-const app = express()
+const app = express();
+const MONGO_URI = process.env.MONGO_URI as string;
 
-// MONGO_URI එක Environment Variables වලින් ලබා ගැනීම
-const MONGO_URI = process.env.MONGO_URI as string
+app.use(express.json());
 
-app.use(express.json())
+// CORS Settings - Frontend එක සම්බන්ධ කිරීමට
 app.use(
     cors({
-        // Frontend URL එක deploy කළාට පසු මෙතනට අනිවාර්යයෙන්ම ඇතුළත් කරන්න
-        origin: ["http://localhost:5173", "http://localhost:5174", "https://rad-72-sample-fe.vercel.app"],
+        origin: [
+            "http://localhost:5173", 
+            "http://localhost:5174", 
+            "https://my-team-front-end-seven.vercel.app" // ඔයාගේ Frontend එකේ Deployment URL එක
+        ],
         methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+        credentials: true
     })
-)
+);
 
 // Routes setup
-app.use("/api/v1/auth", authRouter)
-app.use("/api/v1/ai", aiRouter)
-app.use("/api/v1/organizer", organizerRouter)
-app.use("/api/v1/event", eventRouter)
-app.use("/api/v1/player", playerRouter)
-app.use("/api/v1/post", post)
-app.use("/api/v1/applications", applicationRouter)
+app.use("/api/v1/auth", authRouter);
+app.use("/api/v1/ai", aiRouter);
+app.use("/api/v1/organizer", organizerRouter);
+app.use("/api/v1/event", eventRouter);
+app.use("/api/v1/player", playerRouter);
+app.use("/api/v1/post", post);
+app.use("/api/v1/applications", applicationRouter);
 
 app.get("/", (req, res) => {
-    res.send("Backend is running on Vercel...")
-})
+    res.send("Backend is running on Vercel...");
+});
 
-// Database Connection Logic (Vercel Serverless සඳහා ප්‍රශස්ත කළ එකක්)
+// Database Connection
 let isConnected = false;
 const connectToDatabase = async () => {
     if (isConnected) return;
@@ -59,19 +60,9 @@ const connectToDatabase = async () => {
     }
 };
 
-// Middleware to ensure DB is connected before handling requests
 app.use(async (req, res, next) => {
     await connectToDatabase();
     next();
 });
 
-// Local development එකට පමණක් listen පාවිච්චි කරන්න
-if (process.env.NODE_ENV !== 'production') {
-    const PORT = process.env.PORT || 5000;
-    app.listen(PORT, () => {
-        console.log(`🚀 Local Server running on port ${PORT}`);
-    });
-}
-
-// Vercel එකට අත්‍යවශ්‍ය export එක
 export default app;
