@@ -24,7 +24,7 @@ const MONGO_URI = process.env.MONGO_URI as string;
 
 app.use(
   cors({
-    origin: ["*"],
+    origin: ["https://my-team-front-end-mu.vercel.app"],
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
