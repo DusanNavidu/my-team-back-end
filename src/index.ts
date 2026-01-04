@@ -65,3 +65,6 @@ const startServer = async () => {
 };
 
 startServer();
+
+// src/index.ts අන්තිමට මේක එකතු කරන්න
+export default app;
