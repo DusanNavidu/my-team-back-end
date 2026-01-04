@@ -22,6 +22,8 @@ const app = express();
 const PORT = process.env.PORT;
 const MONGO_URI = process.env.MONGO_URI as string;
 
+app.use(express.json());
+
 app.use(
   cors({
     origin: [
@@ -33,8 +35,6 @@ app.use(
     credentials: true,
   })
 );
-
-app.use(express.json());
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/ai", aiRouter);
