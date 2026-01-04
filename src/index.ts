@@ -24,13 +24,23 @@ const app = express()
 const MONGO_URI = process.env.MONGO_URI as string
 
 app.use(express.json())
+
+// CORS Configuration
 app.use(
     cors({
-        // Frontend URL එක deploy කළාට පසු මෙතනට අනිවාර්යයෙන්ම ඇතුළත් කරන්න
-        origin: ["https://my-team-front-end-seven.vercel.app/", "http://localhost:5173", "http://localhost:5174", "https://my-team-front-end-seven.vercel.app"],
-        methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+        origin: [
+            "https://my-team-front-end-seven.vercel.app", // අන්තිමට / දාන්න එපා
+            "http://localhost:5173",
+            "http://localhost:5174"
+        ],
+        methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+        allowedHeaders: ["Content-Type", "Authorization"],
+        credentials: true
     })
 )
+
+// Pre-flight requests සඳහා අනිවාර්යයෙන්ම මෙය ඇතුළත් කරන්න
+app.options("*", cors());
 
 // Routes setup
 app.use("/api/v1/auth", authRouter)
