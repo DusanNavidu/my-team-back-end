@@ -679,7 +679,6 @@ export const getAllPlayersProfiles = async (req: Request, res: Response) => {
         }
       },
 
-      // 5. Random 10 දෙනෙක් තෝරාගන්න
       { $sample: { size: 10 } }
     ]);
 
@@ -701,7 +700,7 @@ export const getPlayerProfileById = async (req: Request, res: Response) => {
           { $match: { _id: new mongoose.Types.ObjectId(id) } },
           {
               $lookup: {
-                  from: "playerdetails", // Collection නම පරීක්ෂා කරන්න
+                  from: "playerdetails",
                   localField: "_id",
                   foreignField: "userId",
                   as: "profileInfo"
