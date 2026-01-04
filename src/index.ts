@@ -22,13 +22,19 @@ const app = express();
 const PORT = process.env.PORT;
 const MONGO_URI = process.env.MONGO_URI as string;
 
-app.use(express.json());
 app.use(
   cors({
-    origin: ["*"],
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"],
+    origin: [
+      "http://localhost:5173",
+      "https://my-team-front-end-mu.vercel.app",
+    ],
+    methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+    credentials: true,
   })
 );
+
+app.use(express.json());
 
 app.use("/api/v1/auth", authRouter);
 app.use("/api/v1/ai", aiRouter);
