@@ -10,7 +10,6 @@ import eventRouter from "./routes/event"
 import playerRouter from "./routes/playerDetails"
 import post from "./routes/post"
 import applicationRouter from "./routes/application"
-import aiRouter from "./routes/ai"
 import { authenticate } from "./middleware/auth"
 import { requireRole } from "./middleware/role"
 import { Role } from "./models/user.model"
@@ -44,7 +43,6 @@ app.options("*", cors());
 
 // Routes setup
 app.use("/api/v1/auth", authRouter)
-app.use("/api/v1/ai", aiRouter)
 app.use("/api/v1/organizer", organizerRouter)
 app.use("/api/v1/event", eventRouter)
 app.use("/api/v1/player", playerRouter)
